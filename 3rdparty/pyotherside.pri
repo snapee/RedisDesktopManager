@@ -5,16 +5,28 @@ win32* {
     INCLUDEPATH += C:\Python37-x64\include\
 } else {
     unix:macx {
-      exists($$PWD/python-3/bin/python3-config) {
-        PYTHON_CONFIG = $$PWD/python-3/bin/python3-config
+      exists($$PWD/Python.framework) {
+        message("Using Python Framework")
+        QMAKE_LFLAGS += -F$$PWD
+        LIBS += -framework Python
+        INCLUDEPATH += $$PWD/Python.framework/Headers
+
+        #deployment
+        PY_DATA_FILES.files = $$PWD/Python.framework
+        PY_DATA_FILES.path = Contents/Frameworks
+        QMAKE_BUNDLE_DATA += PY_DATA_FILES
+
       } else {
        PYTHON_CONFIG = /usr/local/bin/python3-config
+       QMAKE_LIBS += $$system($$PYTHON_CONFIG --ldflags --libs)
+       QMAKE_CXXFLAGS += $$system($$PYTHON_CONFIG --includes)
       }
     } else {
       PYTHON_CONFIG = python3-config
+
+      QMAKE_LIBS += $$system($$PYTHON_CONFIG --ldflags --libs)
+      QMAKE_CXXFLAGS += $$system($$PYTHON_CONFIG --includes)
     }
-    QMAKE_LIBS += $$system($$PYTHON_CONFIG --ldflags --libs)
-    QMAKE_CXXFLAGS += $$system($$PYTHON_CONFIG --includes)
 }
 
 include(pyotherside/pyotherside.pri)
